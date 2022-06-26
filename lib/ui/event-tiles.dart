@@ -22,12 +22,58 @@ class _EventTileState extends State<EventTile> {
     final feeding =
         '${widget.feed.feed_time.toDate().hour.toString()}:${widget.feed.feed_time.toDate().minute.toString()}';
     return Dismissible(
+      direction: DismissDirection.endToStart,
       key: Key(widget.feed.feed_time.toString()),
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Delete Confirmation"),
+              content: const Text("Are you sure you want to delete this feed?"),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text("Delete")),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text("Cancel"),
+                ),
+              ],
+            );
+          },
+        );
+      },
       onDismissed: (direction) {
         repository.deleteFeed(widget.feed);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Feed Deleted', textAlign: TextAlign.center)));
       },
+      background: Container(
+        color: Colors.blue,
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            children: const <Widget>[
+              Icon(Icons.favorite, color: Colors.white),
+              Text('Move to favorites', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+      ),
+      secondaryBackground: Container(
+        color: Colors.red,
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: const <Widget>[
+              Icon(Icons.delete, color: Colors.white),
+              Text('Move to trash', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+      ),
       child: Center(
         child: Card(
           child: SizedBox(
@@ -65,7 +111,9 @@ class _EventTileState extends State<EventTile> {
               child: Column(
                 children: <Widget>[
                   TextFormField(
-                    initialValue: widget.feed.amount != null ? widget.feed.amount.toString() : '',
+                    initialValue: widget.feed.amount != null
+                        ? widget.feed.amount.toString()
+                        : '',
                     decoration: const InputDecoration(
                       icon: Icon(
                         Icons.water_drop_outlined,
