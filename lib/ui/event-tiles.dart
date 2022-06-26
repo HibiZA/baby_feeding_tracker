@@ -65,7 +65,7 @@ class _EventTileState extends State<EventTile> {
               child: Column(
                 children: <Widget>[
                   TextFormField(
-                    initialValue: widget.feed.amount.toString(),
+                    initialValue: widget.feed.amount != null ? widget.feed.amount.toString() : '',
                     decoration: const InputDecoration(
                       icon: Icon(
                         Icons.water_drop_outlined,
