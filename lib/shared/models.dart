@@ -18,7 +18,7 @@ class Feed {
   Map<String, dynamic> toJson() => _feedToJson(this);
 
   @override
-  String toString() => 'Feed<$amount>';
+  String toString() => 'Feed: {amount: $amount, feed_time: $feed_time>';
 }
 
 // 1

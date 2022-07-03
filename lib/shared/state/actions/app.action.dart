@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../models.dart';
+
 class AppAction {
   @override
   String toString() {
@@ -40,4 +42,18 @@ class AppAddFeedTime {
   }
 
   AppAddFeedTime({required this.addFeedTime});
+}
+
+class AppAddFeed {
+  late List<Feed> feed;
+
+  set feeding(List<Feed> feed) {
+    this.feed = feed;
+  }
+
+  get feeds {
+    return feed;
+  }
+
+  AppAddFeed({required this.feed});
 }

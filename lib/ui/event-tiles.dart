@@ -19,8 +19,14 @@ class _EventTileState extends State<EventTile> {
   final GlobalKey<FormState> _keyDialogForm = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
-    final feeding =
-        '${widget.feed.feed_time.toDate().hour.toString()}:${widget.feed.feed_time.toDate().minute.toString()}';
+    String minute = widget.feed.feed_time.toDate().minute < 10
+        ? '0${widget.feed.feed_time.toDate().minute}'
+        : widget.feed.feed_time.toDate().minute.toString();
+    String hour = widget.feed.feed_time.toDate().hour < 10
+        ? '0${widget.feed.feed_time.toDate().hour}'
+        : widget.feed.feed_time.toDate().hour.toString();
+    String feeding =
+        '$hour:$minute';
     return Dismissible(
       direction: DismissDirection.endToStart,
       key: Key(widget.feed.feed_time.toString()),

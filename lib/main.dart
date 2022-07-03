@@ -5,6 +5,8 @@ import 'package:baby_feeding_tracker/shared/state/actions/app.action.dart';
 import 'package:baby_feeding_tracker/shared/state/reducers/appreducer.reducer.dart';
 import 'package:baby_feeding_tracker/shared/state/states/appstate.state.dart';
 import 'package:baby_feeding_tracker/ui/event-tiles.dart';
+import 'package:baby_feeding_tracker/ui/side_nav.dart';
+import 'package:baby_feeding_tracker/ui/stats_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -14,6 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:intl/intl.dart';
 import 'package:redux/redux.dart';
+import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 
 import 'firebase_options.dart';
 
@@ -53,12 +56,19 @@ class _MyAppState extends State<MyApp> {
             textTheme: GoogleFonts.robotoTextTheme(textTheme),
             primarySwatch: Colors.deepPurple,
           ),
-          home: MyHomePage(
-            title: 'Luca',
-            store: store,
-          ),
+          initialRoute: '/',
+          routes: {
+            AppRoutes.dashboard: ((context) =>
+                MyHomePage(title: 'Luca', store: store)),
+            AppRoutes.statistics: (context) => const Statistics(),
+          },
         ));
   }
+}
+
+class AppRoutes {
+  static const dashboard = '/';
+  static const statistics = '/statistics';
 }
 
 class MyHomePage extends StatefulWidget {
@@ -77,6 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     Feed feed;
     return Scaffold(
+      drawer: sideNav(context),
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
@@ -88,6 +99,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   builder: (context, snapshot) {
                     Duration duration =
                         DateTime.now().difference(state.feedTime);
+                    String minutes = duration.inMinutes.remainder(60) < 10
+                        ? '0${duration.inMinutes.remainder(60)}'
+                        : duration.inMinutes.remainder(60).toString();
                     return Container(
                       height: 100,
                       width: 100,
@@ -99,8 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               const TextStyle(fontSize: 8, color: Colors.white),
                           children: [
                             TextSpan(
-                                text:
-                                    '\n${duration.inHours}H:${duration.inMinutes.remainder(60)}m',
+                                text: '\n${duration.inHours}H:${minutes}m',
                                 style: const TextStyle(
                                     fontSize: 20, color: Colors.white)),
                           ],
@@ -125,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         tooltip: 'Add Feed',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
@@ -133,21 +146,24 @@ class _MyHomePageState extends State<MyHomePage> {
 Widget _buildList(
     BuildContext context, List<DocumentSnapshot>? snapshot, Store store) {
   List<Feed> feeding = [];
-  snapshot!.forEach((element) => {feeding.add(Feed.fromSnapshot(element))});
+
+  for (var element in snapshot!) {
+    feeding.add(Feed.fromSnapshot(element));
+  }
 
   if (snapshot.isNotEmpty) {
+    store.dispatch(AppAddFeed(feed: feeding));
     store
         .dispatch(AppAddFeedTime(addFeedTime: feeding.last.feed_time.toDate()));
-    print(store.state);
   }
-  //lastFeed = feeding.last.feed_time.toDate();
-  return GroupedListView<Feed, String>(
+  return StickyGroupedListView<Feed, DateTime>(
     elements: feeding,
-    groupBy: (element) => DateFormat.MMMd().format(element.feed_time.toDate()),
-    groupSeparatorBuilder: (String groupByValue) => Padding(
+    groupBy: (element) => DateTime(element.feed_time.toDate().year,
+        element.feed_time.toDate().month, element.feed_time.toDate().day),
+    groupSeparatorBuilder: (Feed groupByValue) => Padding(
       padding: const EdgeInsets.all(8.0),
       child: Text(
-        groupByValue,
+        DateFormat('EEE d MMMM').format(groupByValue.feed_time.toDate()),
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
       ),
@@ -155,8 +171,11 @@ Widget _buildList(
     indexedItemBuilder: (context, Feed element, i) => EventTile(
       feed: element,
     ),
-    useStickyGroupSeparators: false, // optional
     floatingHeader: false, // optional
-    order: GroupedListOrder.DESC, // optional
+    order: StickyGroupedListOrder.DESC, // optional
+    groupComparator: (value1, value2) => value1.compareTo(value2),
+    itemComparator: (value1, value2) =>
+        value1.feed_time.compareTo(value2.feed_time),
+    //sort: false,
   );
 }

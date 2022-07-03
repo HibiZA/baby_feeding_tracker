@@ -1,15 +1,18 @@
+import '../../models.dart';
+
 class AppState {
   final bool loading;
   final String error;
   final DateTime feedTime;
+  final List<Feed>? feed;
 
-  AppState(this.loading, this.error, this.feedTime);
+  AppState(this.loading, this.error, this.feedTime, this.feed);
 
-  factory AppState.initial() => AppState(false, '', DateTime.now());
+  factory AppState.initial() => AppState(false, '', DateTime.now(), null);
 
-  AppState copyWith({bool? loading, String? error, DateTime? feedTime}) =>
+  AppState copyWith({bool? loading, String? error, DateTime? feedTime, List<Feed>? feed}) =>
       AppState(loading ?? this.loading, error ?? this.error,
-          feedTime ?? this.feedTime);
+          feedTime ?? this.feedTime, feed ?? this.feed);
 
   DateTime get time => feedTime;
 
@@ -27,5 +30,5 @@ class AppState {
 
   @override
   String toString() =>
-      "AppstateState { loading: $loading,  error: $error, feedTime: $feedTime}";
+      "AppstateState { loading: $loading,  error: $error, feedTime: $feedTime, feed: $feed}";
 }

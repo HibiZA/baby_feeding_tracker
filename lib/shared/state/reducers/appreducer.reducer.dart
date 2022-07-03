@@ -6,5 +6,8 @@ AppState appReducer(AppState state, action) {
   if (action is AppAddFeedTime) {
     return state.copyWith(feedTime: action.feedTime);
   }
-  return AppState(state.loading, state.error, state.feedTime);
+  if (action is AppAddFeed) {
+    return state.copyWith(feed: action.feed);
+  }
+  return AppState(state.loading, state.error, state.feedTime, state.feed);
 }
